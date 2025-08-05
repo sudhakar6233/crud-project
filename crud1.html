@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>LocalStorage CRUD with Text File</title>
+  <style>
+    body { font-family: Arial; padding: 20px; }
+    input, button { margin: 5px; }
+    table, th, td { border: 1px solid black; border-collapse: collapse; padding: 6px; }
+  </style>
+</head>
+<body>
+  <h2>CRUD App with LocalStorage + Text File</h2>
+
+  <input type="text" id="name" placeholder="Enter name">
+  <button onclick="addData()">Add</button>
+  <button onclick="exportToText()">Export to Text File</button>
+
+  <table id="dataTable">
+    <thead>
+      <tr><th>Name</th><th>Actions</th></tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <script>
+    let editIndex = null;
+
+    function getData() {
+      return JSON.parse(localStorage.getItem('crudData') || '[]');
+    }
+
+    function setData(data) {
+      localStorage.setItem('crudData', JSON.stringify(data));
+    }
+
+    function renderTable() {
+      const data = getData();
+      const tbody = document.querySelector('#dataTable tbody');
+      tbody.innerHTML = '';
+      data.forEach((item, index) => {
+        tbody.innerHTML += `
+          <tr>
+            <td>${item}</td>
+            <td>
+              <button onclick="editData(${index})">Edit</button>
+              <button onclick="deleteData(${index})">Delete</button>
+            </td>
+          </tr>`;
+      });
+    }
+
+    function addData() {
+      const name = document.getElementById('name').value.trim();
+      if (!name) return alert('Please enter a name');
+      const data = getData();
+
+      if (editIndex !== null) {
+        data[editIndex] = name;
+        editIndex = null;
+      } else {
+        data.push(name);
+      }
+
+      setData(data);
+      document.getElementById('name').value = '';
+      renderTable();
+    }
+
+    function editData(index) {
+      const data = getData();
+      document.getElementById('name').value = data[index];
+      editIndex = index;
+    }
+
+    function deleteData(index) {
+      const data = getData();
+      data.splice(index, 1);
+      setData(data);
+      renderTable();
+    }
+
+    function exportToText() {
+      const data = getData();
+      const text = data.join('\n');
+      const blob = new Blob([text], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'localstorage-data.txt';
+      link.click();
+    }
+
+    // Initial render
+    renderTable();
+  </script>
+</body>
+</html>
